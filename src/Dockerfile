@@ -26,15 +26,8 @@ RUN npm install -g \
   chai-as-promised \
   mocha
 
-# Basic behaviour is to run Mocha:
-#
-ENTRYPOINT ["mocha"]
+COPY index.js /usr/src/sully/index.js
 
-# Unless overridden, the default parameters will:
+# Basic behaviour is to run Sully:
 #
-#  --inspect      Enable Node inspector
-#  --reporter min Minimal reporting output
-#  --resursive    Run any tests found in the main directory and subdirectories
-#  --watch        Watch for file changes
-#
-CMD ["--inspect", "--watch", "--recursive", "--reporter", "min"]
+ENTRYPOINT ["node", "/usr/src/sully/index.js"]
