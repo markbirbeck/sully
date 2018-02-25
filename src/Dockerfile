@@ -1,7 +1,7 @@
 FROM node:8
 
 LABEL maintainer="mark.birbeck@gmail.com"
-LABEL version="0.2.0"
+LABEL version="0.2.1"
 
 # The Node inspector port needs to be exposed if using that
 # feature:
