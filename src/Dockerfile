@@ -26,6 +26,12 @@ RUN npm install -g \
   chai-as-promised \
   mocha
 
+# Install StandardJS for linting:
+#
+
+RUN npm install -g \
+  standard
+
 COPY index.js /usr/src/sully/index.js
 
 # Basic behaviour is to run Sully:
