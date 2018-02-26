@@ -15,48 +15,59 @@ const { spawn } = require('child_process');
  *     Mocha is still running.
  */
 
-let runInProgress = false;
-let timeout;
-
-const runMocha = () => {
-
-  /**
-   * If we're already running then wait for a bit before running
-   * again:
-   */
-
-  if (runInProgress) {
-    timeout = setTimeout(runMocha, 500);
-    return;
+class RunMocha {
+  constructor() {
+    this.runInProgress = false;
+    this.timeout = null;
   }
 
-  /**
-   * Reset the timer variable and indicate that a run is in progress:
-   */
+  fileChange() {
+    if (this.timeout) {
+      clearTimeout(this.timeout);
+    }
+    this.timeout = setTimeout(this.run.bind(this), 100);
+  }
 
-  timeout = null;
-  runInProgress = true;
+  run() {
 
-  /**
-   *
-   * Run Mocha:
-   */
+    /**
+     * If we're already running then wait for a bit before running
+     * again:
+     */
 
-  const task = spawn('mocha', [
-      '--inspect',         // Enable Node inspector
-      '--recursive',       // Run any tests found in the main directory and subdirectories
-      '--reporter', 'min'  // Minimal reporting output
-    ],
-    { stdio: 'inherit' }
-  );
+    if (this.runInProgress) {
+      this.timeout = setTimeout(this.run.bind(this), 500);
+      return;
+    }
 
-  /**
-   * Once the run has finished we can reset the 'in progress' flag:
-   */
+    /**
+     * Reset the timer variable and indicate that a run is in progress:
+     */
 
-  task.on('exit', (code) => {
-    runInProgress = false;
-  });
+    this.timeout = null;
+    this.runInProgress = true;
+
+    /**
+     *
+     * Run Mocha:
+     */
+
+    const task = spawn('mocha', [
+        '--inspect',         // Enable Node inspector
+        '--recursive',       // Run any tests found in the main directory and subdirectories
+        '--reporter', 'min'  // Minimal reporting output
+      ],
+      { stdio: 'inherit' }
+    );
+
+    /**
+     * Once the run has finished we can reset the 'in progress' flag:
+     */
+
+    task.on('exit', (code) => {
+      this.runInProgress = false;
+    });
+  }
 }
 
 
@@ -64,8 +75,8 @@ const runMocha = () => {
  * Run Mocha once on first run, and then wait for file changes:
  */
 
-runMocha();
-
+const mocha = new RunMocha();
+mocha.run();
 
 /**
  * Monitor both the source and the test directories:
@@ -77,10 +88,7 @@ runMocha();
     filename,
     { encoding: 'buffer' },
     (eventType, filename) => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
-      timeout = setTimeout(runMocha, 100);
+      mocha.fileChange();
     }
   );
 });
