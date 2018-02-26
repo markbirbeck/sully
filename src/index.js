@@ -68,7 +68,7 @@ class RunTask {
 
 
 /**
- * Run Mocha once on first run, and then wait for file changes:
+ * Run Mocha and StandardJS once on first run, and then wait for file changes:
  */
 
 class RunMocha extends RunTask {
@@ -81,8 +81,20 @@ class RunMocha extends RunTask {
   }
 }
 
+class RunStandard extends RunTask {
+  constructor() {
+    super('standard', [
+      '--env', 'mocha',    // Enable Mocha globals
+      '--verbose'          // Verbose logging
+    ]);
+  }
+}
+
 const mocha = new RunMocha();
 mocha.run();
+
+const standard = new RunStandard();
+standard.run();
 
 /**
  * Monitor both the source and the test directories:
@@ -95,6 +107,7 @@ mocha.run();
     { encoding: 'buffer' },
     (eventType, filename) => {
       mocha.fileChange();
+      standard.fileChange();
     }
   );
 });
