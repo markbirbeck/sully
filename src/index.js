@@ -2,21 +2,23 @@ const fs = require('fs');
 const { spawn } = require('child_process');
 
 /**
- * This script runs Mocha under the following conditions:
+ * This script runs tasks under the following conditions:
  *
  *  1. if a source or test file changes then start a timer;
  *  2. if further file changes happen then reset the timer;
  *  3. once the timer expires (i.e., we have gone a certain
  *     amount of time since the last file change) then run
- *     Mocha and set a flag to say that Mocha is running;
- *  4. if any further changes happen whilst Mocha is running then
- *     reset the timer; we don't want to run Mocha again until this
+ *     the task and set a flag to say that the task is running;
+ *  4. if any further changes happen whilst the task is running then
+ *     reset the timer; we don't want to run the task again until this
  *     run is finished but we do want to keep checking whether
- *     Mocha is still running.
+ *     the task is still running.
  */
 
-class RunMocha {
-  constructor() {
+class RunTask {
+  constructor(command, args) {
+    this.command = command;
+    this.args = args;
     this.runInProgress = false;
     this.timeout = null;
   }
@@ -49,16 +51,10 @@ class RunMocha {
 
     /**
      *
-     * Run Mocha:
+     * Run the task:
      */
 
-    const task = spawn('mocha', [
-        '--inspect',         // Enable Node inspector
-        '--recursive',       // Run any tests found in the main directory and subdirectories
-        '--reporter', 'min'  // Minimal reporting output
-      ],
-      { stdio: 'inherit' }
-    );
+    const task = spawn(this.command, this.args, { stdio: 'inherit' });
 
     /**
      * Once the run has finished we can reset the 'in progress' flag:
@@ -74,6 +70,16 @@ class RunMocha {
 /**
  * Run Mocha once on first run, and then wait for file changes:
  */
+
+class RunMocha extends RunTask {
+  constructor() {
+    super('mocha', [
+      '--inspect',         // Enable Node inspector
+      '--recursive',       // Run any tests found in the main directory and subdirectories
+      '--reporter', 'min'  // Minimal reporting output
+    ]);
+  }
+}
 
 const mocha = new RunMocha();
 mocha.run();
