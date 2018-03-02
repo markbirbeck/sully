@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:8-alpine
 
 LABEL maintainer="mark.birbeck@gmail.com"
 LABEL version="0.3.0"
