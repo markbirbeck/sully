@@ -44,4 +44,29 @@ RUN npm install -g \
 
 # Basic behaviour is to run Sully:
 #
-ENTRYPOINT ["node", "/usr/src/sully/index.js"]
+ENTRYPOINT ["tmux"]
+
+CMD [ \
+  "set-option", "-g", "remain-on-exit", "on", \
+    ";", \
+  "new-session", \
+    ";", \
+  "send-keys", \
+    "nodemon ", \
+      "-q ", \
+      "--watch ", ". ", \
+      "--watch ", "test ", \
+      "--exec ", "'mocha --inspect --recursive --reporter min || true'", \
+    "C-m", \
+    ";", \
+  "split-window", \
+    "-v", \
+    ";", \
+  "send-keys", \
+    "nodemon ", \
+      "-q ", \
+      "--watch ", ". ", \
+      "--watch ", "test ", \
+      "--exec ", "'clear && standard --env mocha || true'", \
+    "C-m" \
+]
