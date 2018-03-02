@@ -32,7 +32,15 @@ RUN npm install -g \
 RUN npm install -g \
   standard
 
-COPY index.js /usr/src/sully/index.js
+# Install tmux and Nodemon as the runtime environment:
+#
+ENV TERM=xterm-256color
+
+RUN apk add --update --no-cache \
+  tmux
+
+RUN npm install -g \
+  nodemon
 
 # Basic behaviour is to run Sully:
 #
