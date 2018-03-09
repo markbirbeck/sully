@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:8-alpine
 
 LABEL maintainer="mark.birbeck@gmail.com"
 LABEL version="0.3.0"
@@ -32,8 +32,41 @@ RUN npm install -g \
 RUN npm install -g \
   standard
 
-COPY index.js /usr/src/sully/index.js
+# Install tmux and Nodemon as the runtime environment:
+#
+ENV TERM=xterm-256color
+
+RUN apk add --update --no-cache \
+  tmux
+
+RUN npm install -g \
+  nodemon
 
 # Basic behaviour is to run Sully:
 #
-ENTRYPOINT ["node", "/usr/src/sully/index.js"]
+ENTRYPOINT ["tmux"]
+
+CMD [ \
+  "set-option", "-g", "remain-on-exit", "on", \
+    ";", \
+  "new-session", \
+    ";", \
+  "send-keys", \
+    "nodemon ", \
+      "-q ", \
+      "--watch ", ". ", \
+      "--watch ", "test ", \
+      "--exec ", "'mocha --inspect --recursive --reporter min || true'", \
+    "C-m", \
+    ";", \
+  "split-window", \
+    "-v", \
+    ";", \
+  "send-keys", \
+    "nodemon ", \
+      "-q ", \
+      "--watch ", ". ", \
+      "--watch ", "test ", \
+      "--exec ", "'clear && standard --env mocha || true'", \
+    "C-m" \
+]
