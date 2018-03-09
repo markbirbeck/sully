@@ -1,7 +1,7 @@
 sully
 =====
 
-A server running in Docker that tests your code and watches for changes.
+A server to monitor a Node project and test, lint and check code coverage on file changes.
 
 # Building the Docker Image
 
