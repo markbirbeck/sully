@@ -32,6 +32,12 @@ RUN npm install -g \
 RUN npm install -g \
   standard
 
+# Install istanbul for code coverage:
+#
+RUN npm install -g \
+  istanbul \
+  nyc
+
 # Install tmux and Nodemon as the runtime environment:
 #
 ENV TERM=xterm-256color
@@ -56,7 +62,7 @@ CMD [ \
       "-q ", \
       "--watch ", ". ", \
       "--watch ", "test ", \
-      "--exec ", "'mocha --inspect --recursive --reporter min || true'", \
+      "--exec ", "'nyc --all --cache -- mocha --inspect --recursive --reporter min || true'", \
     "C-m", \
     ";", \
   "split-window", \
