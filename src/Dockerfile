@@ -28,7 +28,6 @@ RUN npm install -g \
 
 # Install StandardJS for linting:
 #
-
 RUN npm install -g \
   standard
 
