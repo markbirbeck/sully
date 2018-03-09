@@ -34,7 +34,6 @@ RUN npm install -g \
 
 # Install istanbul for code coverage:
 #
-
 RUN npm install -g \
   istanbul \
   nyc
