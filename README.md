@@ -3,14 +3,6 @@ sully
 
 A server to monitor a Node project and test, lint and check code coverage on file changes.
 
-# Building the Docker Image
-
-The Dockerfile is in a subdirectory so that `.dockerignore` doesn't get stupid. To build you'd do something like this:
-
-```shell
-docker build ./src -t markbirbeck/sully
-```
-
 # Using Sully
 
 To launch Sully issue the following command:
@@ -27,3 +19,11 @@ To shut the container down use the tmux command to kill the session, which invol
 
 1. Enter the tmux command prompt with `Ctrl + B` followed by `:`;
 2. Type the command `kill-session` followed by `[Enter]`.
+
+# Building the Docker Image
+
+The Dockerfile is in a subdirectory so that `.dockerignore` doesn't get stupid. If you want to build it you'd do something like this:
+
+```shell
+docker build ./src -t markbirbeck/sully
+```
