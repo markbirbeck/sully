@@ -20,10 +20,18 @@ To shut the container down use the tmux command to kill the session, which invol
 1. Enter the tmux command prompt with `Ctrl + B` followed by `:`;
 2. Type the command `kill-session` followed by `[Enter]`.
 
-# Building the Docker Image
+# Building the Docker Images
 
-The Dockerfile is in a subdirectory so that `.dockerignore` doesn't get stupid. If you want to build it you'd do something like this:
+The Dockerfiles are in a subdirectory so that `.dockerignore` doesn't get stupid. Each of the Docker images can be built by way of the `makefile`:
 
 ```shell
-docker build ./src -t markbirbeck/sully
+make build-nyc
+make build-standardjs
+make build-sully
+```
+
+To build all of the images in one go, do:
+
+```shell
+make build
 ```

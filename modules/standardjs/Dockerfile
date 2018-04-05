@@ -1,18 +1,13 @@
 FROM node:8-alpine
 
 LABEL maintainer="mark.birbeck@gmail.com"
-LABEL version="0.3.0"
-
-# The Node inspector port needs to be exposed if using that
-# feature:
-#
-EXPOSE 9229
+LABEL version="0.1.0"
 
 # Create and set the working directory for the unit under test:
 #
 WORKDIR /usr/src/uut
 
-# Install Dockerode:
+# Install StandardJS:
 #
 # Note that modules are installed globally so that they don't
 # interfere with the Node modules directory used for the
@@ -21,10 +16,9 @@ WORKDIR /usr/src/uut
 ENV NODE_PATH /usr/local/lib/node_modules
 
 RUN npm install -g \
-  dockerode
+  standard
 
-COPY index.js /usr/src/sully/index.js
-
-# Basic behaviour is to run Sully:
+# Basic behaviour is to run standardjs:
 #
-ENTRYPOINT ["node", "/usr/src/sully/index.js"]
+ENTRYPOINT ["standard"]
+CMD ["--env", "mocha"]
