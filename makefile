@@ -10,3 +10,9 @@ build: build-standardjs build-sully build-nyc
 
 build-sully:
 	docker build -t markbirbeck/sully ./src
+
+run:
+	docker run \
+	  --rm -it \
+	  -v /var/run/docker.sock:/var/run/docker.sock \
+	  dev/sully ${UUT}
