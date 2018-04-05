@@ -47,5 +47,6 @@ const options = {
   Binds: [`${uut}:/usr/src/uut`]
 }
 
-run('sully/standardjs', [], options)
-run('sully/nyc', [], options)
+run('markbirbeck/repolinter', [], options)
+run('markbirbeck/standardjs', [], options)
+run('markbirbeck/nyc', [], options)
