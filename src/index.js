@@ -1,17 +1,17 @@
-const fs = require('fs');
+const fs = require('fs')
 
 /**
  * First check that we can reach Docker:
  */
 
-const socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock';
-const stats  = fs.statSync(socket);
+const socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock'
+const stats  = fs.statSync(socket)
 
-console.log('sully: Checking Docker status');
+console.log('sully: Checking Docker status')
 if (!stats.isSocket()) {
-  throw new Error('Are you sure that docker is running?');
+  throw new Error('Are you sure that docker is running?')
 }
-console.log('sully: Docker is available');
+console.log('sully: Docker is available')
 
 /**
  * Set up a connection to Docker via the API, and then launch the
@@ -20,7 +20,7 @@ console.log('sully: Docker is available');
 
 const docker = new require('dockerode')({
   socketPath: socket
-});
+})
 
 /**
  * Set up a writable stream that sends output to a blessed box:
@@ -33,6 +33,13 @@ class BlessedStream extends stream.Writable {
     super()
     this.logger = logger
     this.screen = screen
+
+    /**
+     * Clear the display before each run:
+     */
+
+    this.logger.setContent('', true)
+    this.screen.render()
   }
 
  _write(chunk, encoding, done) {
@@ -51,25 +58,34 @@ class BlessedStream extends stream.Writable {
   }
 }
 
-const run = (image, cmd, options, log, screen) => {
+const RunTask = require('./RunTask')
 
-  /**
-   * When running the Docker command direct the output to a BlessedStream:
-   */
+class RunDockerTask extends RunTask {
+  constructor(image, cmd, options, log, screen) {
+    super(cmd)
 
-  const s = new BlessedStream(log, screen)
+    this.image = image
+    this.log = log
+    this.options = options
+    this.screen = screen
+  }
 
-  return docker.run(image, cmd, s, options)
-  .then(container => {
-    console.log(container.output.StatusCode)
-    return container.remove()
-  })
-  .then(data => {
-    console.log('container removed')
-  })
-  .catch(err => {
-    console.error(err)
-  })
+  _run(cmd, args) {
+
+    /**
+     * When running the Docker command direct the output to a BlessedStream:
+     */
+
+    const stream = new BlessedStream(this.log, this.screen)
+
+    return docker.run(this.image, cmd, stream, this.options)
+    .then(container => {
+      return container.remove()
+    })
+    .catch(err => {
+      console.error(err)
+    })
+  }
 }
 
 /**
@@ -159,8 +175,8 @@ screen.render()
  */
 
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
- return process.exit(0);
-});
+ return process.exit(0)
+})
 
 /**
  * These are JS-related tasks. At some point we'll detect that the project is a
@@ -168,14 +184,43 @@ screen.key(['escape', 'q', 'C-c'], function(ch, key) {
  * we'll run StandardJS:
  */
 
-const uut = process.argv[2] || process.env['UUT'];
+const uut = process.argv[2] || process.env['UUT']
 const options = {
   Binds: [`${uut}:/usr/src/uut`]
 }
 
-titlebar.setContent(`sully has your back at: ${uut}`);
-screen.render();
+titlebar.setContent(`sully has your back at: ${uut}`)
+screen.render()
 
-run('markbirbeck/repolinter', [], options, repolinter, screen)
-run('markbirbeck/standardjs', [], options, standardjs, screen)
-run('markbirbeck/nyc', [], options, nyc, screen)
+const repolinterTask = new RunDockerTask('markbirbeck/repolinter', [], options, repolinter, screen)
+repolinterTask.invokeRun()
+const standardjsTask = new RunDockerTask('markbirbeck/standardjs', [], options, standardjs, screen)
+standardjsTask.invokeRun()
+const nycTask = new RunDockerTask('markbirbeck/nyc', [], options, nyc, screen)
+nycTask.invokeRun()
+
+/**
+ * Note that we use chokidar because we want to limit the file range. This
+ * is because some of the tools (such as nyc) write files out which gets us
+ * locked in a loop. If we use normal fs.watch() with globber then we will
+ * have to exclude files ourselves, and we won't see new files that are
+ * added.
+ */
+
+const chokidar = require('chokidar')
+
+/**
+ * Monitor both the source and the test directories:
+ */
+
+const watcher = chokidar.watch(
+  ['/usr/src/uut/', '/usr/src/uut/test/'],
+  { ignored: '/usr/src/uut/.nyc_output/' }
+)
+
+watcher.on('change', path => {
+  [repolinterTask, standardjsTask, nycTask]
+  .forEach(taskRunner => {
+    taskRunner.invokeRun()
+  })
+})
