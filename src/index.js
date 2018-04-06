@@ -9,7 +9,7 @@ const stats  = fs.statSync(socket);
 
 console.log('sully: Checking Docker status');
 if (!stats.isSocket()) {
-  throw new Error('Are you sure the docker is running?');
+  throw new Error('Are you sure that docker is running?');
 }
 console.log('sully: Docker is available');
 
