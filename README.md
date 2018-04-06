@@ -5,20 +5,17 @@ A server to monitor a Node project and test, lint and check code coverage on fil
 
 # Using Sully
 
-To launch Sully issue the following command:
+The easiest way to launch Sully is to use the `makefile`, and then run:
 
 ```shell
-docker run --rm -it -v ${PWD}:/usr/src/uut markbirbeck/sully
+make run UUT=${PWD}/../myproject
 ```
 
-A Docker container will be launched containing a tmux session, which in turn contains two windows. Each window has a process that is watching for file changes. One will run `mocha` when files change, and the other will run `StandardJS`.
+The `UUT` variable needs to point to the directory containing your project.
 
-You can interact with the session using normal tmux commands, for example rearranging the windows.
+A Docker container will be launched containing a `blessed` session, which in turn contains three windows. The master process is watching for file changes in the directory that begins wherever `UUT` refers to. If any files change then each of the Docker containers referred to in the three windows is re-run.
 
-To shut the container down use the tmux command to kill the session, which involves the following:
-
-1. Enter the tmux command prompt with `Ctrl + B` followed by `:`;
-2. Type the command `kill-session` followed by `[Enter]`.
+To shut the top-level container down use `[Esc]`, '`q`' or `[Ctrl]+C`.
 
 # Building the Docker Images
 
@@ -26,6 +23,7 @@ The Dockerfiles are in a subdirectory so that `.dockerignore` doesn't get stupid
 
 ```shell
 make build-nyc
+make build-repolinter
 make build-standardjs
 make build-sully
 ```
