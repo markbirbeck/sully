@@ -14,17 +14,17 @@
 
 class RunTask {
   constructor(command, args) {
-    this.command = command;
-    this.args = args;
-    this.runInProgress = false;
-    this.timeout = null;
+    this.command = command
+    this.args = args
+    this.runInProgress = false
+    this.timeout = null
   }
 
   invokeRun() {
     if (this.timeout) {
-      clearTimeout(this.timeout);
+      clearTimeout(this.timeout)
     }
-    this.timeout = setTimeout(this.run.bind(this), 100);
+    this.timeout = setTimeout(this.run.bind(this), 100)
   }
 
   run() {
@@ -35,33 +35,32 @@ class RunTask {
      */
 
     if (this.runInProgress) {
-      this.timeout = setTimeout(this.run.bind(this), 500);
-      return;
+      this.timeout = setTimeout(this.run.bind(this), 500)
+      return
     }
 
     /**
      * Reset the timer variable and indicate that a run is in progress:
      */
 
-    this.timeout = null;
-    this.runInProgress = true;
+    this.timeout = null
+    this.runInProgress = true
 
     /**
      *
-     * Run the task:
+     * Run the task defined in the subclass:
      */
 
-    const task = this._run(this.command, this.args);
+    const task = this._run(this.command, this.args)
 
     /**
      * Once the run has finished we can reset the 'in progress' flag:
      */
 
     task.then(code => {
-      console.log('got exit');
-      this.runInProgress = false;
-    });
+      this.runInProgress = false
+    })
   }
 }
 
-module.exports = RunTask;
+module.exports = RunTask

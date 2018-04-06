@@ -1,17 +1,17 @@
-const fs = require('fs');
+const fs = require('fs')
 
 /**
  * First check that we can reach Docker:
  */
 
-const socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock';
-const stats  = fs.statSync(socket);
+const socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock'
+const stats  = fs.statSync(socket)
 
-console.log('sully: Checking Docker status');
+console.log('sully: Checking Docker status')
 if (!stats.isSocket()) {
-  throw new Error('Are you sure that docker is running?');
+  throw new Error('Are you sure that docker is running?')
 }
-console.log('sully: Docker is available');
+console.log('sully: Docker is available')
 
 /**
  * Set up a connection to Docker via the API, and then launch the
@@ -20,7 +20,7 @@ console.log('sully: Docker is available');
 
 const docker = new require('dockerode')({
   socketPath: socket
-});
+})
 
 /**
  * Set up a writable stream that sends output to a blessed box:
@@ -175,8 +175,8 @@ screen.render()
  */
 
 screen.key(['escape', 'q', 'C-c'], function(ch, key) {
- return process.exit(0);
-});
+ return process.exit(0)
+})
 
 /**
  * These are JS-related tasks. At some point we'll detect that the project is a
@@ -184,13 +184,13 @@ screen.key(['escape', 'q', 'C-c'], function(ch, key) {
  * we'll run StandardJS:
  */
 
-const uut = process.argv[2] || process.env['UUT'];
+const uut = process.argv[2] || process.env['UUT']
 const options = {
   Binds: [`${uut}:/usr/src/uut`]
 }
 
-titlebar.setContent(`sully has your back at: ${uut}`);
-screen.render();
+titlebar.setContent(`sully has your back at: ${uut}`)
+screen.render()
 
 const repolinterTask = new RunDockerTask('markbirbeck/repolinter', [], options, repolinter, screen)
 repolinterTask.invokeRun()
@@ -216,11 +216,11 @@ const chokidar = require('chokidar')
 const watcher = chokidar.watch(
   ['/usr/src/uut/', '/usr/src/uut/test/'],
   { ignored: '/usr/src/uut/.nyc_output/' }
-);
+)
 
 watcher.on('change', path => {
   [repolinterTask, standardjsTask, nycTask]
   .forEach(taskRunner => {
-    taskRunner.invokeRun();
+    taskRunner.invokeRun()
   })
 })
