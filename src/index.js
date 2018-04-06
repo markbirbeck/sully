@@ -9,7 +9,7 @@ const stats  = fs.statSync(socket);
 
 console.log('sully: Checking Docker status');
 if (!stats.isSocket()) {
-  throw new Error('Are you sure the docker is running?');
+  throw new Error('Are you sure that docker is running?');
 }
 console.log('sully: Docker is available');
 
@@ -22,8 +22,44 @@ const docker = new require('dockerode')({
   socketPath: socket
 });
 
-const run = (image, cmd, options) => {
-  return docker.run(image, cmd, process.stdout, options)
+/**
+ * Set up a writable stream that sends output to a blessed box:
+ */
+
+const stream = require('stream')
+
+class BlessedStream extends stream.Writable {
+  constructor(logger, screen) {
+    super()
+    this.logger = logger
+    this.screen = screen
+  }
+
+ _write(chunk, encoding, done) {
+    const str = chunk.toString()
+
+    /**
+     * The only way I've been able to get this to work is to append
+     * the new input to the end of the current output and then rewrite
+     * the whole thing. Anything else (such as pushLine()) gives too many
+     * empty lines:
+     */
+
+    this.logger.setContent(this.logger.getContent() + str, true)
+    this.screen.render()
+    done(null)
+  }
+}
+
+const run = (image, cmd, options, log, screen) => {
+
+  /**
+   * When running the Docker command direct the output to a BlessedStream:
+   */
+
+  const s = new BlessedStream(log, screen)
+
+  return docker.run(image, cmd, s, options)
   .then(container => {
     console.log(container.output.StatusCode)
     return container.remove()
@@ -32,9 +68,87 @@ const run = (image, cmd, options) => {
     console.log('container removed')
   })
   .catch(err => {
-    console.log(err)
+    console.error(err)
   })
 }
+
+/**
+ * Create the usual blessed and screen:
+ */
+
+const blessed = require('blessed')
+const screen = blessed.screen()
+
+const repolinter = blessed.box({
+  top: 0,
+  left: 0,
+  height: '33%',
+  width: '100%',
+  keys: true,
+  mouse: true,
+  alwaysScroll: true,
+  scrollable: true,
+  border: {
+    type: 'line',
+    fg: 'cyan'
+  },
+  scrollbar: {
+    ch: ' ',
+    bg: 'blue'
+  }
+})
+
+const standardjs = blessed.box({
+  top: '33%',
+  left: 0,
+  height: '34%',
+  width: '100%',
+  keys: true,
+  mouse: true,
+  alwaysScroll: true,
+  scrollable: true,
+  border: {
+    type: 'line',
+    fg: 'cyan'
+  },
+  scrollbar: {
+    ch: ' ',
+    bg: 'blue'
+  }
+})
+
+const nyc = blessed.box({
+  top: '66%',
+  left: 0,
+  height: '33%',
+  width: '100%',
+  keys: true,
+  mouse: true,
+  alwaysScroll: true,
+  scrollable: true,
+  border: {
+    type: 'line',
+    fg: 'cyan'
+  },
+  scrollbar: {
+    ch: ' ',
+    bg: 'blue'
+  }
+})
+
+screen.append(repolinter)
+screen.append(standardjs)
+screen.append(nyc)
+
+screen.render()
+
+/**
+ * Allow [ESQ], 'q' or [CTRL]+C to exit:
+ */
+
+screen.key(['escape', 'q', 'C-c'], function(ch, key) {
+ return process.exit(0);
+});
 
 /**
  * These are JS-related tasks. At some point we'll detect that the project is a
@@ -47,6 +161,6 @@ const options = {
   Binds: [`${uut}:/usr/src/uut`]
 }
 
-run('markbirbeck/repolinter', [], options)
-run('markbirbeck/standardjs', [], options)
-run('markbirbeck/nyc', [], options)
+run('markbirbeck/repolinter', [], options, repolinter, screen)
+run('markbirbeck/standardjs', [], options, standardjs, screen)
+run('markbirbeck/nyc', [], options, nyc, screen)

@@ -23,6 +23,14 @@ ENV NODE_PATH /usr/local/lib/node_modules
 RUN npm install -g \
   dockerode
 
+# Install Blessed:
+#
+ENV LANG=en_US.utf8 TERM=xterm-256color
+
+RUN npm install -g \
+  blessed \
+  colors
+
 COPY index.js /usr/src/sully/index.js
 
 # Basic behaviour is to run Sully:
