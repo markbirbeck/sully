@@ -5,7 +5,7 @@ const fs = require('fs')
  */
 
 const socket = process.env.DOCKER_SOCKET || '/var/run/docker.sock'
-const stats  = fs.statSync(socket)
+const stats = fs.statSync(socket)
 
 console.log('sully: Checking Docker status')
 if (!stats.isSocket()) {
@@ -18,7 +18,8 @@ console.log('sully: Docker is available')
  * harness container:
  */
 
-const docker = new require('dockerode')({
+const Dockerode = require('dockerode')
+const docker = new Dockerode({
   socketPath: socket
 })
 
@@ -29,7 +30,7 @@ const docker = new require('dockerode')({
 const stream = require('stream')
 
 class BlessedStream extends stream.Writable {
-  constructor(logger, screen) {
+  constructor (logger, screen) {
     super()
     this.logger = logger
     this.screen = screen
@@ -42,7 +43,7 @@ class BlessedStream extends stream.Writable {
     this.screen.render()
   }
 
- _write(chunk, encoding, done) {
+  _write (chunk, encoding, done) {
     const str = chunk.toString()
 
     /**
@@ -61,7 +62,7 @@ class BlessedStream extends stream.Writable {
 const RunTask = require('./RunTask')
 
 class RunDockerTask extends RunTask {
-  constructor(image, cmd, options, log, screen) {
+  constructor (image, cmd, options, log, screen) {
     super(cmd)
 
     this.image = image
@@ -70,8 +71,7 @@ class RunDockerTask extends RunTask {
     this.screen = screen
   }
 
-  _run(cmd, args) {
-
+  _run (cmd, args) {
     /**
      * When running the Docker command direct the output to a BlessedStream:
      */
@@ -79,12 +79,12 @@ class RunDockerTask extends RunTask {
     const stream = new BlessedStream(this.log, this.screen)
 
     return docker.run(this.image, cmd, stream, this.options)
-    .then(container => {
-      return container.remove()
-    })
-    .catch(err => {
-      console.error(err)
-    })
+      .then(container => {
+        return container.remove()
+      })
+      .catch(err => {
+        console.error(err)
+      })
   }
 }
 
@@ -174,8 +174,8 @@ screen.render()
  * Allow [ESQ], 'q' or [CTRL]+C to exit:
  */
 
-screen.key(['escape', 'q', 'C-c'], function(ch, key) {
- return process.exit(0)
+screen.key(['escape', 'q', 'C-c'], (ch, key) => {
+  return process.exit(0)
 })
 
 /**
@@ -220,7 +220,7 @@ const watcher = chokidar.watch(
 
 watcher.on('change', path => {
   [repolinterTask, standardjsTask, nycTask]
-  .forEach(taskRunner => {
-    taskRunner.invokeRun()
-  })
+    .forEach(taskRunner => {
+      taskRunner.invokeRun()
+    })
 })

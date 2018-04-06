@@ -16,22 +16,21 @@
  */
 
 class RunTask {
-  constructor(command, args) {
+  constructor (command, args) {
     this.command = command
     this.args = args
     this.runInProgress = false
     this.timeout = null
   }
 
-  invokeRun() {
+  invokeRun () {
     if (this.timeout) {
       clearTimeout(this.timeout)
     }
     this.timeout = setTimeout(this.run.bind(this), 100)
   }
 
-  run() {
-
+  run () {
     /**
      * If we're already running then wait for a bit before running
      * again:
