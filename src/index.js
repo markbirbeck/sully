@@ -33,6 +33,13 @@ class BlessedStream extends stream.Writable {
     super()
     this.logger = logger
     this.screen = screen
+
+    /**
+     * Clear the display before each run:
+     */
+
+    this.logger.setContent('', true)
+    this.screen.render()
   }
 
  _write(chunk, encoding, done) {
@@ -58,19 +65,21 @@ class RunDockerTask extends RunTask {
     super(cmd)
 
     this.image = image
+    this.log = log
     this.options = options
+    this.screen = screen
+  }
+
+  _run(cmd, args) {
 
     /**
      * When running the Docker command direct the output to a BlessedStream:
      */
 
-    this.stream = new BlessedStream(log, screen)
-  }
+    const stream = new BlessedStream(this.log, this.screen)
 
-  _run(cmd, args) {
-    return docker.run(this.image, cmd, this.stream, this.options)
+    return docker.run(this.image, cmd, stream, this.options)
     .then(container => {
-      console.log(container.output.StatusCode)
       return container.remove()
     })
     .catch(err => {
@@ -189,3 +198,29 @@ const standardjsTask = new RunDockerTask('markbirbeck/standardjs', [], options, 
 standardjsTask.invokeRun()
 const nycTask = new RunDockerTask('markbirbeck/nyc', [], options, nyc, screen)
 nycTask.invokeRun()
+
+/**
+ * Note that we use chokidar because we want to limit the file range. This
+ * is because some of the tools (such as nyc) write files out which gets us
+ * locked in a loop. If we use normal fs.watch() with globber then we will
+ * have to exclude files ourselves, and we won't see new files that are
+ * added.
+ */
+
+const chokidar = require('chokidar')
+
+/**
+ * Monitor both the source and the test directories:
+ */
+
+const watcher = chokidar.watch(
+  ['/usr/src/uut/', '/usr/src/uut/test/'],
+  { ignored: '/usr/src/uut/.nyc_output/' }
+);
+
+watcher.on('change', path => {
+  [repolinterTask, standardjsTask, nycTask]
+  .forEach(taskRunner => {
+    taskRunner.invokeRun();
+  })
+})

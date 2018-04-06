@@ -31,6 +31,11 @@ RUN npm install -g \
   blessed \
   colors
 
+# Install chokidar:
+#
+RUN npm install -g \
+  chokidar
+
 COPY *.js /usr/src/sully/
 
 # Basic behaviour is to run Sully:
