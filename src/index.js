@@ -79,10 +79,21 @@ const run = (image, cmd, options, log, screen) => {
 const blessed = require('blessed')
 const screen = blessed.screen()
 
-const repolinter = blessed.box({
+const titlebar = blessed.box({
   top: 0,
   left: 0,
-  height: '33%',
+  height: '10%',
+  width: '100%',
+  border: {
+    type: 'line',
+    fg: 'cyan'
+  }
+})
+
+const repolinter = blessed.box({
+  top: '10%',
+  left: 0,
+  height: '30%',
   width: '100%',
   keys: true,
   mouse: true,
@@ -99,9 +110,9 @@ const repolinter = blessed.box({
 })
 
 const standardjs = blessed.box({
-  top: '33%',
+  top: '40%',
   left: 0,
-  height: '34%',
+  height: '30%',
   width: '100%',
   keys: true,
   mouse: true,
@@ -118,9 +129,9 @@ const standardjs = blessed.box({
 })
 
 const nyc = blessed.box({
-  top: '66%',
+  top: '70%',
   left: 0,
-  height: '33%',
+  height: '30%',
   width: '100%',
   keys: true,
   mouse: true,
@@ -136,6 +147,7 @@ const nyc = blessed.box({
   }
 })
 
+screen.append(titlebar)
 screen.append(repolinter)
 screen.append(standardjs)
 screen.append(nyc)
@@ -160,6 +172,9 @@ const uut = process.argv[2] || process.env['UUT'];
 const options = {
   Binds: [`${uut}:/usr/src/uut`]
 }
+
+titlebar.setContent(`sully has your back at: ${uut}`);
+screen.render();
 
 run('markbirbeck/repolinter', [], options, repolinter, screen)
 run('markbirbeck/standardjs', [], options, standardjs, screen)
