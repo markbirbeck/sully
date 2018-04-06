@@ -32,7 +32,7 @@ const run = (image, cmd, options) => {
     console.log('container removed')
   })
   .catch(err => {
-    console.log(err)
+    console.error(err)
   })
 }
 
