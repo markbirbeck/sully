@@ -1,15 +1,18 @@
 /**
- * This script runs tasks under the following conditions:
+ * This class runs tasks under the following conditions:
  *
- *  1. if a source or test file changes then start a timer;
- *  2. if further file changes happen then reset the timer;
+ *  1. when the task starts, start a timer;
+ *  2. if another request comes in to run the task then reset the timer;
  *  3. once the timer expires (i.e., we have gone a certain
- *     amount of time since the last file change) then run
+ *     amount of time since the last run request) then run
  *     the task and set a flag to say that the task is running;
- *  4. if any further changes happen whilst the task is running then
+ *  4. if any further requests come in whilst the task is running then
  *     reset the timer; we don't want to run the task again until this
  *     run is finished but we do want to keep checking whether
  *     the task is still running.
+ *
+ * Note that the actual task to run is defined in the subclass's _run()
+ * method.
  */
 
 class RunTask {
