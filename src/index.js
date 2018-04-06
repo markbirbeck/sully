@@ -51,25 +51,32 @@ class BlessedStream extends stream.Writable {
   }
 }
 
-const run = (image, cmd, options, log, screen) => {
+const RunTask = require('./RunTask')
 
-  /**
-   * When running the Docker command direct the output to a BlessedStream:
-   */
+class RunDockerTask extends RunTask {
+  constructor(image, cmd, options, log, screen) {
+    super(cmd)
 
-  const s = new BlessedStream(log, screen)
+    this.image = image
+    this.options = options
 
-  return docker.run(image, cmd, s, options)
-  .then(container => {
-    console.log(container.output.StatusCode)
-    return container.remove()
-  })
-  .then(data => {
-    console.log('container removed')
-  })
-  .catch(err => {
-    console.error(err)
-  })
+    /**
+     * When running the Docker command direct the output to a BlessedStream:
+     */
+
+    this.stream = new BlessedStream(log, screen)
+  }
+
+  _run(cmd, args) {
+    return docker.run(this.image, cmd, this.stream, this.options)
+    .then(container => {
+      console.log(container.output.StatusCode)
+      return container.remove()
+    })
+    .catch(err => {
+      console.error(err)
+    })
+  }
 }
 
 /**
@@ -176,6 +183,9 @@ const options = {
 titlebar.setContent(`sully has your back at: ${uut}`);
 screen.render();
 
-run('markbirbeck/repolinter', [], options, repolinter, screen)
-run('markbirbeck/standardjs', [], options, standardjs, screen)
-run('markbirbeck/nyc', [], options, nyc, screen)
+const repolinterTask = new RunDockerTask('markbirbeck/repolinter', [], options, repolinter, screen)
+repolinterTask.invokeRun()
+const standardjsTask = new RunDockerTask('markbirbeck/standardjs', [], options, standardjs, screen)
+standardjsTask.invokeRun()
+const nycTask = new RunDockerTask('markbirbeck/nyc', [], options, nyc, screen)
+nycTask.invokeRun()

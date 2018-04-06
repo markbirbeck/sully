@@ -31,7 +31,7 @@ RUN npm install -g \
   blessed \
   colors
 
-COPY index.js /usr/src/sully/index.js
+COPY *.js /usr/src/sully/
 
 # Basic behaviour is to run Sully:
 #
